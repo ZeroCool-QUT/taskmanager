@@ -90,4 +90,29 @@ const deleteExpense = async (req, res) => {
     }
 };
 
-module.exports = { getExpenses, addExpense, updateExpense, deleteExpense };
+const getAllExpenses = async (req, res) => {
+  try {
+    const expenses = await Expense.find({}).populate('userId', 'name email').sort({ createdAt: -1 });
+    res.json(expenses);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const updateExpenseStatus = async (req, res) => {
+  const { status } = req.body;
+  if (!['approved', 'rejected'].includes(status)) {
+    return res.status(400).json({ message: 'Status must be approved or rejected' });
+  }
+  try {
+    const expense = await Expense.findById(req.params.id);
+    if (!expense) return res.status(404).json({ message: 'Expense not found' });
+    expense.status = status;
+    const updated = await expense.save();
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { getExpenses, addExpense, updateExpense, deleteExpense, getAllExpenses, updateExpenseStatus };
