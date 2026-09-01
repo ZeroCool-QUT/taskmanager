@@ -14,15 +14,18 @@ The Travel Expense Tracker is designed to help users to submit and approve trave
 * Approve the expense claim by Admin
 * Reject the expense claim by Admin
 
-**Setup:**
+**Setup**
 
-**Backend:**
+* Backend:
 cd backend
 npm install
-Create a .env file
+Create a .env file:
+MONGO_URI=mongodb+srv://ZeroCool-QUT:Mooseadam1!@cluster0.cxwjkpe.mongodb.net/?appName=Cluster0
+JWT_SECRET=2J8zqkP7VN6bxzg+Wy7DXCsd3Yx8mF3Bl0kch6HYtFs=
+PORT=5001
 npm start
 
-**Frontend:**
+* Frontend:
 cd frontend
 npm install
 npm start
@@ -31,6 +34,26 @@ npm start
 frontend/src/axiosConfig.jsx must be changed to the EC2 instance's public IP (e.g. `http://<ec2-public-ip>:5001`) before building/serving the frontend.
 Also make sure that port is open in the EC2 security group.
 
+
+**Architecture Summary**
+
+* Three\-tier MERN architecture:
+
+* Frontend — React SPA (React Router, Context API for auth state, Axios for HTTP), served as static built files.
+* API — Node.js/Express REST API (`/api/auth`, `/api/expenses`), JWT\-based auth via a `protect` middleware, and a separate `adminOnly` middleware enforcing role checks server\-side (not just hidden in the UI).
+* Database — MongoDB Atlas, accessed through Mongoose. Two collections: `users` (with a `role: 'user' | 'admin'` field) and `expenses` (with a `status: 'pending' | 'approved' | 'rejected'` field).
+* Host — a single AWS EC2 (Ubuntu) instance running both the API and the built frontend, process\-managed with `pm2`.
+
+**Known Limitations**
+
+* No password reset / forgot\-password flow.
+* The social login buttons (Google/Facebook/etc.) shown on the Register screen in the Figma design are illustrative only and are not implemented — the app supports email/password authentication only.
+* The first admin account must be created by manually setting `role: 'admin'` on a user document directly in the database (via MongoDB Atlas or a seed script).
+* Unstable hosting: the app is deployed to a single EC2 instance using its public IP directly (no Elastic IP or domain name), so the deployment URL can change if the instance is stopped/restarted — the URL in this README reflects the address at time of submission and may not remain valid indefinitely.
+
+**Deployment**
+
+* Live URL: http://32.236.135.71:3000
 
 ---
 
